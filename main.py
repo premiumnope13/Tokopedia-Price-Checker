@@ -9,43 +9,44 @@ headers = {
 "User-Agent": 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'}
 
 
-def check_price_today():
-    check_price()
-
+def check_price():
+    yesterdayPrice = 4520000 #initiate price
     while (True):
-        print ("Sleeping........")
-        time.sleep(3600 * 24)
-        print ("OK Here We Go!1!!1!!1!1")
+        print ("Initiated Price : ",yesterdayPrice)
+
+        page = requests.get(URL,headers= headers) 
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        title = soup.find("h1", {"class": "_2Ly9D0Pe"}).get_text() #Just Find the title of the product
+
+        priceNow = soup.find("span", {"class": "_3MctVyX0"}).get_text() #Get Price (Selecting by Class)
+
+        priceNow.strip()
+
+        converted_priceNow = priceNow[4:13].replace(",", "", 2) #Change "comma" to "period"
+        print (title)
+        print ("Today's price is : ",int(converted_priceNow))
+
+        compare(int(converted_priceNow),yesterdayPrice)
+
+        if (int(converted_priceNow) < yesterdayPrice): #change To 
+            print ("Check Email Yo, Price is dropping")
+            send_mail()
+
+        else:
+            print ("Still Not Dropping")
+        yesterdayPrice = int(converted_priceNow)
+        print ("Waits For 12 Hours")
+        time.sleep(3600*12) #Report every 12 Hours since program runs for the 1st time 
         
 
-
-
-
-def check_price():
-
-
-    page = requests.get(URL,headers= headers) 
-    soup = BeautifulSoup(page.content, 'html.parser')
-
-    title = soup.find("h1", {"class": "_2Ly9D0Pe"}).get_text() #Just Find the title of the product
-
-    priceNow = soup.find("span", {"class": "_3MctVyX0"}).get_text() #Get Price (Selecting by Class)
-
-    priceNow.strip()
-
-    converted_priceNow = priceNow[4:13].replace(",", "", 2) #Change "comma" to "period"
-    print (title)
-    print ("Today's price is : ",int(converted_priceNow))
     
+def compare(x,y):
+    if (x <y):
+        print ("Price is dropping !")
+    else :
+        print ("Still not Changing")
 
-    if (int(converted_priceNow) > 4540000): #change To abbre
-        print ("Check Email Yo, Price is dropping")
-        send_mail()
-
-    else:
-        print ("Still Not Dropping")
-   
-   
 
 def send_mail():
 
@@ -65,11 +66,11 @@ def send_mail():
     server.sendmail(
         '@gmail.com', #from
         '..h@gmail.com',#to
-        msg #payload
+        msg
 
     )
     server.quit()
 
 
-check_price_today()
 
+check_price()
